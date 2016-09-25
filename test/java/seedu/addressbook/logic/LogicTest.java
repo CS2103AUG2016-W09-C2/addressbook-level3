@@ -69,7 +69,6 @@ public class LogicTest {
      * also confirms that the following three parts of the Logic object's state are as expected:<br>
      *      - the internal address book data are same as those in the {@code expectedAddressBook} <br>
      *      - the internal 'last shown list' matches the {@code expectedLastList} <br>
-     *      - the storage file content matches data in {@code expectedAddressBook} <br>
      */
     private void assertCommandBehavior(String inputCommand,
                                       String expectedMessage,
@@ -90,7 +89,6 @@ public class LogicTest {
         //Confirm the state of data is as expected
         assertEquals(expectedAddressBook, addressBook);
         assertEquals(lastShownList, logic.getLastShownList());
-        assertEquals(addressBook, saveFile.load());
     }
 
 
@@ -448,6 +446,13 @@ public class LogicTest {
         List<Person> fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
         AddressBook expectedAB = helper.generateAddressBook(fourPersons);
         List<Person> expectedList = helper.generatePersonList(pTarget1, pTarget2);
+        
+        pTarget1 = helper.generatePersonWithName("bla bla KEY bla");
+        pTarget2 = helper.generatePersonWithName("bla rAnDoM bla bceofeia");
+        p1 = helper.generatePersonWithName("key key");
+        p2 = helper.generatePersonWithName("KEy sduauo");
+
+        fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);        
         helper.addToAddressBook(addressBook, fourPersons);
 
         assertCommandBehavior("find KEY rAnDoM",
@@ -457,6 +462,92 @@ public class LogicTest {
                                 expectedList);
     }
 
+    @Test
+    public void execute_find_tag_invalidArgsFormat() throws Exception {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE);
+        assertCommandBehavior("find -d", expectedMessage);
+    }
+
+    @Test
+    public void execute_find_tag_onlyMatchesFullWordsInTags() throws Exception {
+        TestDataHelper helper = new TestDataHelper();
+        Person pTarget1 = helper.generatePersonWithTag("bla KEY ");
+        Person pTarget2 = helper.generatePersonWithTag("bla KEY bceofeia");
+        Person p1 = helper.generatePersonWithTag("KE Y");
+        Person p2 = helper.generatePersonWithTag("KEYKEYKEY sduauo");
+
+        List<Person> fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        AddressBook expectedAB = helper.generateAddressBook(fourPersons);
+        List<Person> expectedList = helper.generatePersonList(pTarget1, pTarget2);
+        
+        pTarget1 = helper.generatePersonWithTag("bla KEY ");
+        pTarget2 = helper.generatePersonWithTag("bla KEY bceofeia");
+        p1 = helper.generatePersonWithTag("KE Y");
+        p2 = helper.generatePersonWithTag("KEYKEYKEY sduauo");
+
+        fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        helper.addToAddressBook(addressBook, fourPersons);
+
+        assertCommandBehavior("find -t KEY",
+                                Command.getMessageForPersonListShownSummary(expectedList),
+                                expectedAB,
+                                true,
+                                expectedList);
+    }
+
+    @Test
+    public void execute_find_tag_isCaseSensitive() throws Exception {
+        TestDataHelper helper = new TestDataHelper();
+        Person pTarget1 = helper.generatePersonWithTag("bla KEY");
+        Person pTarget2 = helper.generatePersonWithTag("bla KEY bceofeia");
+        Person p1 = helper.generatePersonWithTag("key");
+        Person p2 = helper.generatePersonWithTag("KEy sduauo");
+
+        List<Person> fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        AddressBook expectedAB = helper.generateAddressBook(fourPersons);
+        List<Person> expectedList = helper.generatePersonList(pTarget1, pTarget2);
+
+        pTarget1 = helper.generatePersonWithTag("bla KEY");
+        pTarget2 = helper.generatePersonWithTag("bla KEY bceofeia");
+        p1 = helper.generatePersonWithTag("key");
+        p2 = helper.generatePersonWithTag("KEy sduauo");
+
+        fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        helper.addToAddressBook(addressBook, fourPersons);
+
+        assertCommandBehavior("find -t KEY",
+                                Command.getMessageForPersonListShownSummary(expectedList),
+                                expectedAB,
+                                true,
+                                expectedList);
+    }
+
+    @Test
+    public void execute_find_tag_matchesIfAnyKeywordPresent() throws Exception {
+        TestDataHelper helper = new TestDataHelper();
+        Person pTarget1 = helper.generatePersonWithTag("bla KEY");
+        Person pTarget2 = helper.generatePersonWithTag("bla rAnDoM bceofeia");
+        Person p1 = helper.generatePersonWithTag("key");
+        Person p2 = helper.generatePersonWithTag("KEy sduauo");
+
+        List<Person> fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        AddressBook expectedAB = helper.generateAddressBook(fourPersons);
+        List<Person> expectedList = helper.generatePersonList(pTarget1, pTarget2);
+        
+        pTarget1 = helper.generatePersonWithTag("bla KEY");
+        pTarget2 = helper.generatePersonWithTag("bla rAnDoM bceofeia");
+        p1 = helper.generatePersonWithTag("key");
+        p2 = helper.generatePersonWithTag("KEy sduauo");
+        fourPersons = helper.generatePersonList(p1, pTarget1, p2, pTarget2);
+        helper.addToAddressBook(addressBook, fourPersons);
+
+        assertCommandBehavior("find -t KEY rAnDoM",
+                                Command.getMessageForPersonListShownSummary(expectedList),
+                                expectedAB,
+                                true,
+                                expectedList);
+    }    
+    
     /**
      * A utility class to generate test data.
      */
@@ -586,6 +677,24 @@ public class LogicTest {
                     new UniqueTagList(new Tag("tag"))
             );
         }
+         
+         /**
+          * Generates a Person object with given name. Other fields will have some dummy values.
+          */
+          Person generatePersonWithTag(String tag) throws Exception {
+              String[] tags = tag.split(" ");
+              UniqueTagList tagList = new UniqueTagList();
+              for(String s : tags) {
+                  tagList.add(new Tag(s));
+              }
+             return new Person(
+                     new Name("Name with tag " + tag),
+                     new Phone("1", false),
+                     new Email("1@email", false),
+                     new Address("House of 1", false),
+                     tagList
+             );
+         }         
     }
 
 }

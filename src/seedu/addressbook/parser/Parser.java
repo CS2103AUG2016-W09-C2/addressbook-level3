@@ -15,10 +15,15 @@ import static seedu.addressbook.common.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 public class Parser {
 
     public static final Pattern PERSON_INDEX_ARGS_FORMAT = Pattern.compile("(?<targetIndex>.+)");
-
+    
     public static final Pattern KEYWORDS_ARGS_FORMAT =
             Pattern.compile("(?<keywords>\\S+(?:\\s+\\S+)*)"); // one or more keywords separated by whitespace
-
+    
+    public static final Pattern FIND_OPTION_TAG_ARGS_FORMAT = 
+            Pattern.compile("(?<option>-t)");
+    public static final Pattern FIND_OPTION_NAME_ARGS_FORMAT = 
+            Pattern.compile("(?<option>[-])");
+    
     public static final Pattern PERSON_DATA_ARGS_FORMAT = // '/' forward slashes are reserved for delimiter prefixes
             Pattern.compile("(?<name>[^/]+)"
                     + " (?<isPhonePrivate>p?)p/(?<phone>[^/]+)"
@@ -70,7 +75,7 @@ public class Parser {
 
             case FindCommand.COMMAND_WORD:
                 return prepareFind(arguments);
-
+            
             case ListCommand.COMMAND_WORD:
                 return new ListCommand();
 
@@ -79,7 +84,7 @@ public class Parser {
 
             case ViewAllCommand.COMMAND_WORD:
                 return prepareViewAll(arguments);
-
+                
             case ExitCommand.COMMAND_WORD:
                 return new ExitCommand();
 
@@ -216,6 +221,19 @@ public class Parser {
      * @return the prepared command
      */
     private Command prepareFind(String args) {
+        final Matcher matcherTag = FIND_OPTION_TAG_ARGS_FORMAT.matcher(args.trim());
+        if (matcherTag.find()) {
+            return prepareFindByTag(args);
+        }
+        final Matcher invalidOption = FIND_OPTION_NAME_ARGS_FORMAT.matcher(args.trim());
+        if (invalidOption.find()) {
+            return new IncorrectCommand(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                    FindCommand.MESSAGE_USAGE));
+        }
+        return prepareFindByName(args);
+    }
+
+    private Command prepareFindByName(String args) {
         final Matcher matcher = KEYWORDS_ARGS_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
             return new IncorrectCommand(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
@@ -227,6 +245,19 @@ public class Parser {
         final Set<String> keywordSet = new HashSet<>(Arrays.asList(keywords));
         return new FindCommand(keywordSet);
     }
+    
+    private Command prepareFindByTag(String args) {
+        final Matcher matcher = KEYWORDS_ARGS_FORMAT.matcher(args.trim());
+        if (!matcher.matches()) {
+            return new IncorrectCommand(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                    FindCommand.MESSAGE_USAGE));
+        }
 
+        // keywords delimited by whitespace
+        final String[] keywords = matcher.group("keywords").split("\\s+");
+        final Set<String> keywordSet = new HashSet<>(Arrays.asList(keywords));
+        
+        return new FindByTagCommand(keywordSet);
+    }
 
 }
