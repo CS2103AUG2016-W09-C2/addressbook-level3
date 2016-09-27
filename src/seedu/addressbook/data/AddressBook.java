@@ -17,8 +17,17 @@ import java.util.*;
  */
 public class AddressBook {
 
-    private final UniquePersonList allPersons;
+	private final UniquePersonList allPersons;
     private final UniqueTagList allTags; // can contain tags not attached to any person
+    private class BufferedPerson{
+    	private String status;
+    	private ReadOnlyPerson person;
+    	BufferedPerson(String status, ReadOnlyPerson person){
+    		this.status = status;
+    		this.person = person;
+    	}
+    }
+    private BufferedPerson bufferedPerson = null;
 
     public static AddressBook empty() {
         return new AddressBook();
@@ -30,6 +39,7 @@ public class AddressBook {
     public AddressBook() {
         allPersons = new UniquePersonList();
         allTags = new UniqueTagList();
+        bufferedPerson = new BufferedPerson(null,null);
     }
 
     /**
@@ -42,6 +52,7 @@ public class AddressBook {
     public AddressBook(UniquePersonList persons, UniqueTagList tags) {
         this.allPersons = new UniquePersonList(persons);
         this.allTags = new UniqueTagList(tags);
+        this.bufferedPerson = new BufferedPerson(null, null);
         for (Person p : allPersons) {
             syncTagsWithMasterList(p);
         }
@@ -80,6 +91,7 @@ public class AddressBook {
     public void addPerson(Person toAdd) throws DuplicatePersonException {
         syncTagsWithMasterList(toAdd);
         allPersons.add(toAdd);
+        bufferedPerson = new BufferedPerson("+", toAdd);
     }
 
     /**
@@ -112,6 +124,7 @@ public class AddressBook {
      */
     public void removePerson(ReadOnlyPerson toRemove) throws PersonNotFoundException {
         allPersons.remove(toRemove);
+        bufferedPerson = new BufferedPerson("-", toRemove);
     }
 
     /**
@@ -129,6 +142,21 @@ public class AddressBook {
     public void clear() {
         allPersons.clear();
         allTags.clear();
+    }
+    
+    /**
+     * Undoes the most recent add/delete person operation.
+     * @throws DuplicatePersonException 
+     * @throws PersonNotFoundException 
+     */
+    public void undoOperation() throws DuplicatePersonException, PersonNotFoundException{
+    	if(bufferedPerson.status.equals(null)){
+    		
+    	}else if(bufferedPerson.status.equals("+")){
+    		removePerson(bufferedPerson.person);
+    	}else{
+    		addPerson((Person)bufferedPerson.person);
+    	}
     }
 
     /**
