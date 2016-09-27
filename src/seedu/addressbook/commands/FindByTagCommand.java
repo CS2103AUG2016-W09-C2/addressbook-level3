@@ -12,6 +12,10 @@ import seedu.addressbook.data.person.ReadOnlyPerson;
 import seedu.addressbook.data.tag.Tag;
 import seedu.addressbook.data.tag.UniqueTagList;
 
+/**
+ * Finds and lists all persons in address book whose tags contains any of the argument keywords.
+ * Keyword matching is case sensitive.
+ */
 public class FindByTagCommand extends Command{
     public static final String COMMAND_WORD = "find -t";
     
@@ -40,7 +44,7 @@ public class FindByTagCommand extends Command{
     }
     
     /**
-     * Retrieve all persons in the address book whose names contain some of the specified keywords.
+     * Retrieve all persons in the address book whose tags contain some of the specified keywords.
      *
      * @param keywords for searching
      * @return list of persons found
