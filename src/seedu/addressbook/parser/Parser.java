@@ -229,8 +229,8 @@ public class Parser {
     /**
      * Parses arguments in the context of the find person command.
      *
-     * @param args full command args string
-     * @return the prepared command
+     * @param args full command args string.
+     * @return the prepared command.
      */
     private Command prepareFind(String args) {
         final Matcher matcherTag = FIND_OPTION_TAG_ARGS_FORMAT.matcher(args.trim());
@@ -245,6 +245,12 @@ public class Parser {
         return prepareFindByName(args);
     }
 
+    /**
+     * Parses arguments in the context of the find person command using name(s) as keyword(s).
+     * 
+     * @param args full command args string.
+     * @return the prepared command.
+     */
     private Command prepareFindByName(String args) {
         final Matcher matcher = KEYWORDS_ARGS_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
@@ -258,6 +264,12 @@ public class Parser {
         return new FindCommand(keywordSet);
     }
     
+    /**
+     * Parses arguments in the context of the find person command using tag(s) as keyword(s).
+     * 
+     * @param args full command args string.
+     * @return the prepared command.
+     */
     private Command prepareFindByTag(String args) {
         final Matcher matcher = KEYWORDS_ARGS_FORMAT.matcher(args.trim());
         if (!matcher.matches()) {
