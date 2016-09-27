@@ -69,6 +69,9 @@ public class Parser {
 
             case DeleteCommand.COMMAND_WORD:
                 return prepareDelete(arguments);
+                
+            case ExportCommand.COMMAND_WORD:
+            	return prepareExport(arguments);
 
             case ClearCommand.COMMAND_WORD:
                 return new ClearCommand();
@@ -97,7 +100,13 @@ public class Parser {
         }
     }
 
-    /**
+    private Command prepareExport(String arguments) {
+		// TODO Auto-generated method stub
+    	String directory = arguments.trim();
+		return new ExportCommand(directory);
+	}
+
+	/**
      * Parses arguments in the context of the add person command.
      *
      * @param args full command args string

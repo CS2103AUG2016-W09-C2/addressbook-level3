@@ -1,5 +1,6 @@
 package seedu.addressbook.data;
 
+import seedu.addressbook.commands.UndoCommand;
 import seedu.addressbook.data.person.*;
 import seedu.addressbook.data.person.UniquePersonList.*;
 import seedu.addressbook.data.tag.Tag;
@@ -39,7 +40,7 @@ public class AddressBook {
     public AddressBook() {
         allPersons = new UniquePersonList();
         allTags = new UniqueTagList();
-        bufferedPerson = new BufferedPerson(null,null);
+        bufferedPerson = null;
     }
 
     /**
@@ -52,7 +53,7 @@ public class AddressBook {
     public AddressBook(UniquePersonList persons, UniqueTagList tags) {
         this.allPersons = new UniquePersonList(persons);
         this.allTags = new UniqueTagList(tags);
-        this.bufferedPerson = new BufferedPerson(null, null);
+        this.bufferedPerson = null;
         for (Person p : allPersons) {
             syncTagsWithMasterList(p);
         }
@@ -150,8 +151,8 @@ public class AddressBook {
      * @throws PersonNotFoundException 
      */
     public void undoOperation() throws DuplicatePersonException, PersonNotFoundException{
-    	if(bufferedPerson.status.equals(null)){
-    		
+    	if(bufferedPerson==null){
+    		throw new IllegalArgumentException();
     	}else if(bufferedPerson.status.equals("+")){
     		removePerson(bufferedPerson.person);
     	}else{

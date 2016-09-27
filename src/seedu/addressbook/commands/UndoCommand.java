@@ -12,6 +12,8 @@ public class UndoCommand extends Command{
             + "Undo your most recent command which modified the addressbook.\n\t"
             + "Example: " + COMMAND_WORD;
     public static final String MESSAGE_UNDO_SUCCESS = "Undo succeeded.";
+    public static final String MESSAGE_UNDO_FAIL = "Nothing to undo.";
+    public boolean disable;
 
 	@Override
 	public CommandResult execute() {
@@ -23,6 +25,8 @@ public class UndoCommand extends Command{
 			return new CommandResult(AddCommand.MESSAGE_DUPLICATE_PERSON);
 		} catch (PersonNotFoundException npe){
 			return new CommandResult(Messages.MESSAGE_PERSON_NOT_IN_ADDRESSBOOK);
+		} catch (IllegalArgumentException e){
+			return new CommandResult(MESSAGE_UNDO_FAIL);
 		}
 	}
 
